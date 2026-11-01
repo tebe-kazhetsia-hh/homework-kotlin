@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="item_margin">4dp</dimen>
+    <dimen name="item_text_size">24sp</dimen>
+    <dimen name="list_padding">4dp</dimen>
+    <dimen name="button_margin">8dp</dimen>
+</resources>
