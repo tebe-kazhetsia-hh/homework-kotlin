@@ -7,16 +7,23 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
-class NumbersAdapter(private var count: Int) :
+class NumbersAdapter(private val numbers: List<Int>,
+                     private val onItemClick: (Int) -> Unit) :
     RecyclerView.Adapter<NumbersAdapter.NumberViewHolder>() {
 
     class NumberViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val text: TextView = view.findViewById(R.id.number_text)
 
-        fun bind(number: Int) {
+        fun bind(number: Int, onItemClick: (Int) -> Unit) {
             text.text = number.toString()
             val colorRes = if (number % 2 == 0) R.color.even else R.color.odd
             text.setBackgroundColor(ContextCompat.getColor(itemView.context, colorRes))
+            itemView.setOnClickListener {
+                val position = bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(position)
+                }
+            }
         }
     }
 
@@ -27,13 +34,8 @@ class NumbersAdapter(private var count: Int) :
     }
 
     override fun onBindViewHolder(holder: NumberViewHolder, position: Int) {
-        holder.bind(position + 1)
+        holder.bind(numbers[position], onItemClick)
     }
 
-    override fun getItemCount(): Int = count
-
-    fun addOne() {
-        count++
-        notifyItemInserted(count - 1)
-    }
+    override fun getItemCount(): Int = numbers.size
 }

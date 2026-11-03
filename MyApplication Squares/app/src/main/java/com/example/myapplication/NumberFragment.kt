@@ -11,15 +11,26 @@ import androidx.recyclerview.widget.RecyclerView
 
 class NumbersFragment : Fragment() {
 
-    private var count = 0
-
+    private var numbers = ArrayList<Int>()
+    private var removed = ArrayList<Int>()
+    private var nextNumber = 1
     private lateinit var adapter: NumbersAdapter
     private lateinit var recycler: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        count = savedInstanceState?.getInt(KEY_COUNT)
-            ?: resources.getInteger(R.integer.initial_count)
+        if (savedInstanceState != null) {
+
+            numbers = savedInstanceState.getIntegerArrayList(KEY_NUMBERS) ?: ArrayList()
+            removed = savedInstanceState.getIntegerArrayList(KEY_REMOVED) ?: ArrayList()
+            nextNumber = savedInstanceState.getInt(KEY_NEXT_NUMBER, 1)
+        } else {
+
+            val initialCount = resources.getInteger(R.integer.initial_count)
+            numbers = ArrayList((1..initialCount).toList())
+            removed = ArrayList()
+            nextNumber = initialCount + 1
+        }
     }
 
     override fun onCreateView(
@@ -33,25 +44,47 @@ class NumbersFragment : Fragment() {
 
         val spanCount = resources.getInteger(R.integer.span_count)
 
-        adapter = NumbersAdapter(count)
+        adapter = NumbersAdapter(numbers) { position -> removeAt(position) }
         recycler = view.findViewById(R.id.recycler)
         recycler.layoutManager = GridLayoutManager(requireContext(), spanCount)
         recycler.adapter = adapter
 
         view.findViewById<Button>(R.id.add_button).setOnClickListener {
-            count++
-            adapter.addOne()
-            recycler.scrollToPosition(count - 1)
+            addNumber()
         }
+    }
+
+    //добавили 2 функции
+    private fun removeAt(position: Int) {
+        val number = numbers.removeAt(position)
+
+        removed.add(number)
+        adapter.notifyItemRemoved(position)
+    }
+
+
+    private fun addNumber() {
+
+        val number = if (removed.isNotEmpty()) {
+            removed.removeAt(removed.size - 1)
+        } else {
+            nextNumber++
+        }
+        numbers.add(number)
+        adapter.notifyItemInserted(numbers.size - 1)
+        recycler.scrollToPosition(numbers.size - 1)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(KEY_COUNT, count)
+        outState.putIntegerArrayList(KEY_NUMBERS, numbers)
+        outState.putIntegerArrayList(KEY_REMOVED, removed)
+        outState.putInt(KEY_NEXT_NUMBER, nextNumber)
     }
 
     companion object {
-        private const val KEY_COUNT = "count"
-        private const val INITIAL_COUNT = 100
+        private const val KEY_NUMBERS = "numbers"
+        private const val KEY_REMOVED = "removed"
+        private const val KEY_NEXT_NUMBER = "next_number"
     }
 }
